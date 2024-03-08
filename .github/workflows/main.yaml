@@ -30,32 +30,53 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
 
-      # Get docker hub image name
-      - uses: haya14busa/action-cond@v1
-        id: docker-hub-image-name-set
-        with:
-          cond: ${{ env.Image_platform == 'linux/arm64' }}
-          if_true: echo "DOCKER_HUB_IMAGE_NAME=feyico/${Image_name//\//-}:${Image_tag:-latest}-arm64" >> "$GITHUB_OUTPUT"
-          if_false: echo "DOCKER_HUB_IMAGE_NAME=feyico/${Image_name//\//-}:${Image_tag:-latest}" >> "$GITHUB_OUTPUT"
-        
-      # Runs a set of commands using the runners shell
-      - name: Run a multi-line script
-        env:
-          DOCKER_HUB_IMAGE_NAME: ${{ steps.docker-hub-image-name-set.outputs.DOCKER_HUB_IMAGE_NAME }}
-        run: |
-          docker pull --platform $Image_platform $Image_name:$Image_tag
-          docker tag $Image_name:$Image_tag $DOCKER_HUB_IMAGE_NAME
-      
       - name: Log in to Docker Hub
         uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
         with:
           username: ${{ secrets.DOCKER_HUB_USER }}
           password: ${{ secrets.DOCKER_HUB_PASSWD }}
+
+      # Get docker hub image name
+      # - uses: haya14busa/action-cond@v1
+      #   id: docker-hub-image-name-set
+      #   with:
+      #     cond: ${{ env.Image_platform == 'linux/arm64' }}
+      #     if_true: echo "DOCKER_HUB_IMAGE_NAME=feyico/${Image_name//\//-}:${Image_tag:-latest}-arm64" >> "$GITHUB_OUTPUT"
+      #     if_false: echo "DOCKER_HUB_IMAGE_NAME=feyico/${Image_name//\//-}:${Image_tag:-latest}" >> "$GITHUB_OUTPUT"
+
+      - name: Get docker hub image name
+        id: docker-hub-image-name-set
+        run: echo "DOCKER_HUB_IMAGE_NAME=feyico/${Image_name//\//-}" >> "$GITHUB_OUTPUT"
+        
+      # Runs a set of commands using the runners shell
+      - name: Process linux/amd64 images
+        env:
+          DOCKER_HUB_IMAGE_NAME: ${{ steps.docker-hub-image-name-set.outputs.DOCKER_HUB_IMAGE_NAME }}
+        run: |
+          docker pull --platform linux/amd64 $Image_name:$Image_tag
+          docker tag $Image_name:$Image_tag $DOCKER_HUB_IMAGE_NAME-amd64:$Image_tag
+          docker push $DOCKER_HUB_IMAGE_NAME-amd64:$Image_tag
+
+      - name: Process linux/arm64 images
+        env:
+          DOCKER_HUB_IMAGE_NAME: ${{ steps.docker-hub-image-name-set.outputs.DOCKER_HUB_IMAGE_NAME }}
+        run: |
+          docker pull --platform linux/arm64 $Image_name:$Image_tag
+          docker tag $Image_name:$Image_tag $DOCKER_HUB_IMAGE_NAME-arm64:$Image_tag
+          docker push $DOCKER_HUB_IMAGE_NAME-arm64:$Image_tag
+
+      - name: Create manifest list
+        env:
+          DOCKER_HUB_IMAGE_NAME: ${{ steps.docker-hub-image-name-set.outputs.DOCKER_HUB_IMAGE_NAME }}
+        run: |
+          docker manifest create $DOCKER_HUB_IMAGE_NAME:$Image_tag \
+                                 $DOCKER_HUB_IMAGE_NAME-amd64:$Image_tag \
+                                 $DOCKER_HUB_IMAGE_NAME-arm64:$Image_tag --amend
       
       # Runs a set of commands using the runners shell
       - name: Push to Docker Registry
         env:
           DOCKER_HUB_IMAGE_NAME: ${{ steps.docker-hub-image-name-set.outputs.DOCKER_HUB_IMAGE_NAME }}
         run: |
-          docker push $DOCKER_HUB_IMAGE_NAME
+          docker manifest push $DOCKER_HUB_IMAGE_NAME:$Image_tag
 
