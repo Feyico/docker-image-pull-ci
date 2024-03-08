@@ -21,8 +21,8 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      Image_name: quay.io/cephcsi/cephcsi
-      Image_tag: v3.10.2
+      Image_name: registry.k8s.io/sig-storage/csi-node-driver-registrar
+      Image_tag: v2.7.0
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
