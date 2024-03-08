@@ -21,8 +21,8 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      Image_name: registry.k8s.io/sig-storage/csi-node-driver-registrar
-      Image_tag: v2.7.0
+      Image_name: registry.k8s.io/sig-storage/csi-resizer
+      Image_tag: v1.7.0
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
