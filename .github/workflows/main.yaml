@@ -25,18 +25,24 @@ jobs:
     env:
       Image_name: quay.io/ceph/ceph
       Image_tag: v17.2.5
-      feyico_image_name: ${{ Image_name//\//- }}
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
 
+      # Get docker hub image name
+      - name: Get docker hub image name
+        id: docker-hub-image-name-set
+        run: echo "DOCKER_HUB_IMAGE_NAME=feyico/${Image_name//\//-}:${Image_tag:-latest}" >> "$GITHUB_OUTPUT"
+        
       # Runs a set of commands using the runners shell
       - name: Run a multi-line script
+        env:
+          DOCKER_HUB_IMAGE_NAME: ${{ step.docker-hub-image-name-set.outputs.DOCKER_HUB_IMAGE_NAME }}
         run: |
           docker pull --platform $G_PLATFORM $Image_name:$Image_tag
-          docker tag $Image_name:$Image_tag $feyico_image_name:$Image_tag
+          docker tag $Image_name:$Image_tag $DOCKER_HUB_IMAGE_NAME
       
       - name: Log in to Docker Hub
         uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
@@ -46,6 +52,8 @@ jobs:
       
       # Runs a set of commands using the runners shell
       - name: Push to Docker Registry
+        env:
+          DOCKER_HUB_IMAGE_NAME: ${{ step.docker-hub-image-name-set.outputs.DOCKER_HUB_IMAGE_NAME }}
         run: |
-          docker push $feyico_image_name:$Image_tag
+          docker push $DOCKER_HUB_IMAGE_NAME
 
