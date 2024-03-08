@@ -25,7 +25,7 @@ jobs:
     env:
       Image_name: quay.io/ceph/ceph
       Image_tag: v17.2.5
-      feyico_image_name: ${Image_name//\//-}
+      feyico_image_name: ${{ Image_name//\//- }}
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
