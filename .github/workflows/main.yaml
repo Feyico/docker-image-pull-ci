@@ -21,9 +21,8 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      Image_name: quay.io/ceph/ceph
-      Image_tag: v17.2.5
-      Image_platform: linux/arm64
+      Image_name: quay.io/cephcsi/cephcsi
+      Image_tag: v3.10.2
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
