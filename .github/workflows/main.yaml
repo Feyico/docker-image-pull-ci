@@ -21,8 +21,8 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      Image_name: k8s.gcr.io/coredns/coredns
-      Image_tag: v1.21.14
+      Image_name: k8s.gcr.io/kube-apiserver
+      Image_tag: v1.22.17
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -35,14 +35,6 @@ jobs:
           username: ${{ secrets.DOCKER_HUB_USER }}
           password: ${{ secrets.DOCKER_HUB_PASSWD }}
 
-      # Get docker hub image name
-      # - uses: haya14busa/action-cond@v1
-      #   id: docker-hub-image-name-set
-      #   with:
-      #     cond: ${{ env.Image_platform == 'linux/arm64' }}
-      #     if_true: echo "DOCKER_HUB_IMAGE_NAME=feyico/${Image_name//\//-}:${Image_tag:-latest}-arm64" >> "$GITHUB_OUTPUT"
-      #     if_false: echo "DOCKER_HUB_IMAGE_NAME=feyico/${Image_name//\//-}:${Image_tag:-latest}" >> "$GITHUB_OUTPUT"
-
       - name: Get docker hub image name
         id: docker-hub-image-name-set
         run: echo "DOCKER_HUB_IMAGE_NAME=feyico/${Image_name//\//-}" >> "$GITHUB_OUTPUT"
@@ -53,7 +45,7 @@ jobs:
           DOCKER_HUB_IMAGE_NAME: ${{ steps.docker-hub-image-name-set.outputs.DOCKER_HUB_IMAGE_NAME }}
         run: |
           docker pull --platform linux/amd64 $Image_name:$Image_tag
-          docker tag $Image_name:$Image_tag $DOCKER_HUB_IMAGE_NAME-amd64:$Image_tag
+          docker tag $Image_name:$Image_tag $DOCKER_HUB_IMAGE_NAME:$Image_tag-amd64
           docker push $DOCKER_HUB_IMAGE_NAME-amd64:$Image_tag
 
       - name: Process linux/arm64 images
@@ -61,7 +53,7 @@ jobs:
           DOCKER_HUB_IMAGE_NAME: ${{ steps.docker-hub-image-name-set.outputs.DOCKER_HUB_IMAGE_NAME }}
         run: |
           docker pull --platform linux/arm64 $Image_name:$Image_tag
-          docker tag $Image_name:$Image_tag $DOCKER_HUB_IMAGE_NAME-arm64:$Image_tag
+          docker tag $Image_name:$Image_tag $DOCKER_HUB_IMAGE_NAME:$Image_tag-arm64
           docker push $DOCKER_HUB_IMAGE_NAME-arm64:$Image_tag
 
       - name: Create manifest list
@@ -69,8 +61,8 @@ jobs:
           DOCKER_HUB_IMAGE_NAME: ${{ steps.docker-hub-image-name-set.outputs.DOCKER_HUB_IMAGE_NAME }}
         run: |
           docker manifest create $DOCKER_HUB_IMAGE_NAME:$Image_tag \
-                                 $DOCKER_HUB_IMAGE_NAME-amd64:$Image_tag \
-                                 $DOCKER_HUB_IMAGE_NAME-arm64:$Image_tag --amend
+                                 $DOCKER_HUB_IMAGE_NAME:$Image_tag-amd64 \
+                                 $DOCKER_HUB_IMAGE_NAME:$Image_tag-arm64 --amend
       
       # Runs a set of commands using the runners shell
       - name: Push to Docker Registry
