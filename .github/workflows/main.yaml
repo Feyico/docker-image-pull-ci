@@ -46,7 +46,7 @@ jobs:
         run: |
           docker pull --platform linux/amd64 $Image_name:$Image_tag
           docker tag $Image_name:$Image_tag $DOCKER_HUB_IMAGE_NAME:$Image_tag-amd64
-          docker push $DOCKER_HUB_IMAGE_NAME-amd64:$Image_tag
+          docker push $DOCKER_HUB_IMAGE_NAME:$Image_tag-amd64
 
       - name: Process linux/arm64 images
         env:
@@ -54,7 +54,7 @@ jobs:
         run: |
           docker pull --platform linux/arm64 $Image_name:$Image_tag
           docker tag $Image_name:$Image_tag $DOCKER_HUB_IMAGE_NAME:$Image_tag-arm64
-          docker push $DOCKER_HUB_IMAGE_NAME-arm64:$Image_tag
+          docker push $DOCKER_HUB_IMAGE_NAME:$Image_tag-arm64
 
       - name: Create manifest list
         env:
