@@ -25,7 +25,7 @@ function DockerImages() {
 
         docker manifest push ${docker_image_name}
         
-    done < images-info | grep -v "^#"
+    done < image-info | grep -v "^#"
 }
 
 DockerImages
