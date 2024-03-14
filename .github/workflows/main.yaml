@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      Image_name: k8s.gcr.io/kube-controller-manager
+      Image_name: k8s.gcr.io/kube-scheduler
       Image_tag: v1.21.14
 
     # Steps represent a sequence of tasks that will be executed as part of the job
