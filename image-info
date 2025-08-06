@@ -1,2 +1,2 @@
 # image-info, like quay.io/ceph/ceph:v17.2.5
-registry.gitlab.com/gitlab-org/professional-services-automation/tools/migration/congregate:rolling-debian
+gcr.io/distroless/static:nonroot
